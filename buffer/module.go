@@ -1,6 +1,7 @@
 package buffer
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/dop251/goja"
@@ -36,6 +37,24 @@ func (b *Buffer) Alloc(call goja.FunctionCall) goja.Value {
 	return NewBufferObject(b.runtime, data)
 }
 
+func (b *Buffer) Compare(call goja.FunctionCall) goja.Value {
+	dataA := call.Arguments[0].ToObject(b.runtime).Get("data").ToObject(b.runtime)
+	dataB := call.Arguments[1].ToObject(b.runtime).Get("data").ToObject(b.runtime)
+
+	bufA := make([]byte, len(dataA.Keys()))
+	bufB := make([]byte, len(dataB.Keys()))
+	for i, key := range dataA.Keys() {
+		bufA[i] = byte(dataA.Get(key).ToInteger())
+	}
+	for i, key := range dataB.Keys() {
+		bufB[i] = byte(dataB.Get(key).ToInteger())
+	}
+
+	comparison := bytes.Compare(bufA, bufB)
+
+	return b.runtime.ToValue(comparison)
+}
+
 func (b *Buffer) From(call goja.FunctionCall) goja.Value {
 	arg0 := call.Arguments[0]
 	switch t := arg0.ExportType().String(); t {
@@ -65,6 +84,7 @@ func Require(runtime *goja.Runtime, module *goja.Object) {
 	}
 	obj := module.Get("exports").(*goja.Object)
 	obj.Set("alloc", b.Alloc)
+	obj.Set("compare", b.Compare)
 	obj.Set("from", b.From)
 }
 

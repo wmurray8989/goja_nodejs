@@ -33,6 +33,18 @@ func TestBuffer(t *testing.T) {
 			Script:         `JSON.stringify(Buffer.alloc(10, 'abc'))`,
 			ExpectedOutput: `{"type":"Buffer","data":[97,98,99,97,98,99,97,98,99,97]}`,
 		},
+		"compare same": {
+			Script:         `Buffer.compare(Buffer.from('abc'), Buffer.from('abc'))`,
+			ExpectedOutput: `0`,
+		},
+		"compare before": {
+			Script:         `Buffer.compare(Buffer.from('abc'), Buffer.from('xyz'))`,
+			ExpectedOutput: `-1`,
+		},
+		"compare after": {
+			Script:         `Buffer.compare(Buffer.from('xyz'), Buffer.from('abc'))`,
+			ExpectedOutput: `1`,
+		},
 		"from string": {
 			Script:         `JSON.stringify(Buffer.from("test string"))`,
 			ExpectedOutput: `{"type":"Buffer","data":[116,101,115,116,32,115,116,114,105,110,103]}`,
