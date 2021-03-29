@@ -21,6 +21,18 @@ func TestBuffer(t *testing.T) {
 		Script         string
 		ExpectedOutput string
 	}{
+		"alloc empty": {
+			Script:         `JSON.stringify(Buffer.alloc(5))`,
+			ExpectedOutput: `{"type":"Buffer","data":[0,0,0,0,0]}`,
+		},
+		"alloc character": {
+			Script:         `JSON.stringify(Buffer.alloc(5, 'a'))`,
+			ExpectedOutput: `{"type":"Buffer","data":[97,97,97,97,97]}`,
+		},
+		"alloc string": {
+			Script:         `JSON.stringify(Buffer.alloc(10, 'abc'))`,
+			ExpectedOutput: `{"type":"Buffer","data":[97,98,99,97,98,99,97,98,99,97]}`,
+		},
 		"from string": {
 			Script:         `JSON.stringify(Buffer.from("test string"))`,
 			ExpectedOutput: `{"type":"Buffer","data":[116,101,115,116,32,115,116,114,105,110,103]}`,

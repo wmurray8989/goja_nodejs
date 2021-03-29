@@ -19,6 +19,23 @@ func NewBufferObject(runtime *goja.Runtime, b []byte) *goja.Object {
 	return object
 }
 
+func (b *Buffer) Alloc(call goja.FunctionCall) goja.Value {
+	length := call.Arguments[0].ToInteger()
+	data := make([]byte, length)
+	if len(call.Arguments) == 1 {
+		return NewBufferObject(b.runtime, data)
+	}
+
+	fill := call.Arguments[1].String()
+	if fillLen := len(fill); fillLen > 0 {
+		for i := range data {
+			data[i] = fill[i%fillLen]
+		}
+	}
+
+	return NewBufferObject(b.runtime, data)
+}
+
 func (b *Buffer) From(call goja.FunctionCall) goja.Value {
 	arg0 := call.Arguments[0]
 	switch t := arg0.ExportType().String(); t {
@@ -35,14 +52,11 @@ func (b *Buffer) From(call goja.FunctionCall) goja.Value {
 			}
 			return NewBufferObject(b.runtime, data)
 		default:
-			fmt.Printf("unexpected class name for arg0: %q\n", className)
+			return NewBufferObject(b.runtime, []byte{})
 		}
-		call.Arguments[0].ToObject(b.runtime)
 	default:
-		fmt.Printf("unexpected type for arg0: %q\n", t)
+		return NewBufferObject(b.runtime, []byte{})
 	}
-
-	return b.runtime.ToValue(1)
 }
 
 func Require(runtime *goja.Runtime, module *goja.Object) {
@@ -50,6 +64,7 @@ func Require(runtime *goja.Runtime, module *goja.Object) {
 		runtime: runtime,
 	}
 	obj := module.Get("exports").(*goja.Object)
+	obj.Set("alloc", b.Alloc)
 	obj.Set("from", b.From)
 }
 
