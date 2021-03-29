@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/buffer"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 )
@@ -38,6 +39,7 @@ type EventLoop struct {
 	stopCond *sync.Cond
 	running  bool
 
+	enableBuffer  bool
 	enableConsole bool
 }
 
@@ -49,6 +51,7 @@ func NewEventLoop(opts ...Option) *EventLoop {
 		jobChan:       make(chan func()),
 		wakeup:        make(chan struct{}, 1),
 		stopCond:      sync.NewCond(&sync.Mutex{}),
+		enableBuffer:  true,
 		enableConsole: true,
 	}
 
@@ -60,6 +63,9 @@ func NewEventLoop(opts ...Option) *EventLoop {
 	if loop.enableConsole {
 		console.Enable(vm)
 	}
+	if loop.enableBuffer {
+		buffer.Enable(vm)
+	}
 	vm.Set("setTimeout", loop.setTimeout)
 	vm.Set("setInterval", loop.setInterval)
 	vm.Set("clearTimeout", loop.clearTimeout)
@@ -69,6 +75,16 @@ func NewEventLoop(opts ...Option) *EventLoop {
 }
 
 type Option func(*EventLoop)
+
+// EnableBuffer controls whether the "buffer" module is loaded into
+// the runtime used by the loop.  By default, loops are created with
+// the "buffer" module loaded, pass EnableBuffer(false) to
+// NewEventLoop to disable this behavior.
+func EnableBuffer(enableBuffer bool) Option {
+	return func(loop *EventLoop) {
+		loop.enableBuffer = enableBuffer
+	}
+}
 
 // EnableConsole controls whether the "console" module is loaded into
 // the runtime used by the loop.  By default, loops are created with

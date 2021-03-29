@@ -307,3 +307,33 @@ func TestRunOnStoppedLoop(t *testing.T) {
 		t.Fatal("running job on stopped loop")
 	}
 }
+
+func TestRunWithBuffer(t *testing.T) {
+	const SCRIPT = `
+	Buffer.from([1, 2, 3]);
+	`
+
+	loop := NewEventLoop()
+	prg, err := goja.Compile("main.js", SCRIPT, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loop.Run(func(vm *goja.Runtime) {
+		_, err = vm.RunProgram(prg)
+	})
+	if err != nil {
+		t.Fatal("Call to Buffer.from generated an error", err)
+	}
+
+	loop = NewEventLoop()
+	prg, err = goja.Compile("main.js", SCRIPT, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loop.Run(func(vm *goja.Runtime) {
+		_, err = vm.RunProgram(prg)
+	})
+	if err != nil {
+		t.Fatal("Call to Buffer.From generated an error", err)
+	}
+}
